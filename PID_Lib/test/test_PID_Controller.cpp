@@ -1,4 +1,5 @@
 /// \file test_TE_PID_Controller.cpp
+/// The arrays used to test the PI and PID controllers are generated in the PID_ControllerTest.m and ValidatePiWIthAntiWindup.m scripts.
 /// Author: Charl van de Merwe
 /// Date: 12 October 2021
 
@@ -128,7 +129,7 @@ namespace CV {
             WHEN("The PI controller object is used in a feedback loop with a step reference") {
                 THEN("The PI loop will output the required control values") {
                     for (std::size_t i = 0; i < PID_SAMPLES; i++) {
-                        const TE::float32_t PI_Output {piCtrl.runIterFromSetpointNoAntiWindup(REF, yPI[i])};
+                        const TE::float32_t PI_Output {piCtrl.runIterFromSetpoint(REF, yPI[i])};
                         REQUIRE(static_cast<std::int32_t>(10000.0F * PI_Output) == static_cast<std::int32_t>(10000.0F * uPI[i]));
                     }
                 }
@@ -145,7 +146,7 @@ namespace CV {
             WHEN("The PI controller object is used in a feedback loop with a step reference") {
                 THEN("The PI loop will output the required control values") {
                     for (std::size_t i = 0; i < PID_SAMPLES; i++) {
-                        const TE::float32_t PID_Output {pidCtrl.runIterFromSetpointNoAntiWindup(REF, yPID[i])};
+                        const TE::float32_t PID_Output {pidCtrl.runIterFromSetpoint(REF, yPID[i])};
                         REQUIRE(static_cast<std::int32_t>(10000.0F * PID_Output) == static_cast<std::int32_t>(10000.0F * uPID[i]));
                     }
                 }

@@ -12,8 +12,8 @@ namespace CV {
 
     /// Struct used to specify a PI controller's parameters
     struct PI_Params {
-        TE::float32_t p;           ///< Proportional gain
-        TE::float32_t i;           ///< Integral gain
+        TE::float32_t p;                  ///< Proportional gain
+        TE::float32_t i;                  ///< Integral gain
         TE::float32_t iInitialval = 0.0F; ///< Integral initial value
     };
 
@@ -28,8 +28,7 @@ namespace CV {
 
     /// This is a parallel PID controller implemented using the trapezoidal (bilinear) method. The gains specified are the continuous time
     /// gains. Anti-windup is implemented by passing in the compensation value, see the execute function comments.
-    /// See https://transnetengineering.visualstudio.com/PCC/_wiki/wikis/PCC.wiki/256/Discrete-control-implementation for an overview of
-    /// the discrete algorithm used.
+    /// See https://www.scilab.org/discrete-time-pid-controller-implementation for an overview of the discrete algorithm used.
     class PID_Controller {
     public:
         /// PI controller constructor
@@ -51,10 +50,6 @@ namespace CV {
         [[nodiscard]] TE::float32_t runIteration(const TE::float32_t aErr, const TE::float32_t aWindupErrCompensateVal = 0.0F) noexcept;
 
         /// Run the control loop iteration of the PI or PID controller, with the setpoint and feedback arguments from which the error is
-        /// calculated. This function should only be used if no anti-windup is desired.
-        [[nodiscard]] TE::float32_t runIterFromSetpointNoAntiWindup(const TE::float32_t aSetpoint, const TE::float32_t aFeedback) noexcept;
-
-        /// Run the control loop iteration of the PI or PID controller, with the setpoint and feedback arguments from which the error is
         /// calculated.
         /// \param aSetpoint                The setpoint (desired plant output)
         /// \param aFeedback                The feedback from the plant output
@@ -63,7 +58,7 @@ namespace CV {
         ///                                 be of the form: aWindupErrCompensateVal = Ka * (Sig - SigLim), where Ka is the gain, Sig is the
         ///                                 signal before it is limited and SigLim is the limited signal. Set to 0.0F for no compensation.
         [[nodiscard]] TE::float32_t runIterFromSetpoint(const TE::float32_t aSetpoint, const TE::float32_t aFeedback,
-                                                    const TE::float32_t aWindupErrCompensateVal) noexcept;
+                                                        const TE::float32_t aWindupErrCompensateVal = 0.0F) noexcept;
 
         /// Reset the integral and derivative terms to zero. Reset the derivate terms to zero.
         void reset() noexcept;
@@ -81,10 +76,10 @@ namespace CV {
         const TE::float32_t mKd {0.0F};                   ///< Derivative gain
         const TE::float32_t mDerivativeFilterCoef {0.0F}; ///< N - the derivative filter coefficient
         const TE::float32_t mT_Cntrl;                     ///< Control loop execution period
-        const bool mDerivativeTerm {false};           ///< true if there is a derivative term. Otherwise this is a PI controller
+        const bool mDerivativeTerm {false};               ///< true if there is a derivative term. Otherwise this is a PI controller
         TE::float32_t mIntegral;                          ///< Integral term
         TE::float32_t mIntegralInputPrev;                 ///< previous input to the integral control. The integral input is the error
-                                                      ///< minus the anti-windup compensation value
+                                                          ///< minus the anti-windup compensation value
         TE::float32_t mErrPrev {0.0F};                    ///< Previous error
         TE::float32_t mDerivativePrev {0.0F};             ///< Previous derivative term
     };
@@ -124,53 +119,11 @@ namespace CV {
         const TE::float32_t mBottomLimit;             ///< The bottom limit of the output of the controller
         const TE::float32_t mTopLimit;                ///< The top limit of the output of the controller
         const TE::float32_t mAntiWindupGain;          ///< This is the gain that is multiplied by the difference between the output and the
-                                                  ///< limited output of this controller
+                                                      ///< limited output of this controller
         TE::float32_t mWindupErrCompensateVal {0.0F}; ///< This value is subtracted from the error before being passed to the integral
-                                                  ///< component
+                                                      ///< component
     };
 
-    class PI_Ctrl_Feedforward_ExternalAntiWindup : public PID_Controller {
-    public:
-        /// PI controller with external anti-windup constructor.
-        /// \param aPIparams        PI controller parameters
-        /// \param aT_Cntrl         The control loop period in seconds
-        /// \param aAntiWindupGain  This is the gain that is multiplied by the difference between the output and the limited output of this
-        ///                         controller
-        PI_Ctrl_Feedforward_ExternalAntiWindup(const PI_Params aPIparams, const TE::float32_t aT_Cntrl,
-                                               const TE::float32_t aAntiWindupGain) noexcept;
-
-        /// Execute the PI or PID controller with anti-windup
-        [[nodiscard]] TE::float32_t compute(const TE::float32_t aErr, const TE::float32_t aOutputLimited, const TE::float32_t aFeedforward = 0.0F);
-
-    private:
-        const TE::float32_t mAntiWindupGain;          ///< This is the gain that is multiplied by the difference between the output and the
-                                                  ///< limited output of this controller
-        TE::float32_t mWindupErrCompensateVal {0.0F}; ///< This value is subtracted from the error before being passed to the integral
-                                                  ///< component
-    };
-
-    class PI_Ctrl_Feedforward_InternalAntiWindup : public PID_Controller {
-    public:
-        /// PI controller with internal anti-windup constructor.
-        /// \param aPIparams        PI controller parameters
-        /// \param aT_Cntrl         The control loop period in seconds
-        /// \param aAntiWindupGain  This is the gain that is multiplied by the difference between the output and the limited output of this
-        ///                         controller
-        PI_Ctrl_Feedforward_InternalAntiWindup(const PI_Params aPIparams, const TE::float32_t aT_Cntrl, const TE::float32_t aBottomLimit,
-                                               const TE::float32_t aTopLimit, const TE::float32_t aAntiWindupGain) noexcept;
-
-        /// Execute the PI or PID controller with anti-windup
-        [[nodiscard]] TE::float32_t compute(const TE::float32_t aErr, const TE::float32_t aFeedforward = 0.0F);
-
-    private:
-        const TE::float32_t mBottomLimit;             ///< The bottom limit of the output of the controller
-        const TE::float32_t mTopLimit;                ///< The top limit of the output of the controller
-        const TE::float32_t mAntiWindupGain;          ///< This is the gain that is multiplied by the difference between the output and the
-                                                  ///< limited output of this controller
-        TE::float32_t mWindupErrCompensateVal {0.0F}; ///< This value is subtracted from the error before being passed to the integral
-                                                  ///< component
-    };
-
-} // namespace TE
+} // namespace CV
 
 #endif //TE_PID_CONTROLLER_H_

@@ -57,10 +57,6 @@ namespace CV {
         return proportional + mIntegral + derivative;
     }
 
-    [[nodiscard]] TE::float32_t PID_Controller::runIterFromSetpointNoAntiWindup(const TE::float32_t aSetpoint, const TE::float32_t aFeedback) noexcept {
-        return runIteration(calcError(aSetpoint, aFeedback));
-    }
-
     [[nodiscard]] TE::float32_t PID_Controller::runIterFromSetpoint(const TE::float32_t aSetpoint, const TE::float32_t aFeedback,
                                                                     const TE::float32_t aWindupErrCompensateVal) noexcept {
         return runIteration(calcError(aSetpoint, aFeedback), aWindupErrCompensateVal);
@@ -108,34 +104,6 @@ namespace CV {
     /// calculate the windup compensation value for the next step.
     [[nodiscard]] TE::float32_t PID_Ctrl_InternalAntiWindup::compute(const TE::float32_t aErr) {
         const TE::float32_t output {runIteration(aErr, mWindupErrCompensateVal)};
-        const TE::float32_t outputLimited {saturate(output, mTopLimit, mBottomLimit)}; // throws exception if mBottomLimit > mTopLimit
-        mWindupErrCompensateVal = mAntiWindupGain * (output - outputLimited);          // compensation value for the next step
-        return outputLimited;
-    }
-
-
-    PI_Ctrl_Feedforward_ExternalAntiWindup::PI_Ctrl_Feedforward_ExternalAntiWindup(const PI_Params aPIparams, const TE::float32_t aT_Cntrl,
-                                                                                   const TE::float32_t aAntiWindupGain) noexcept
-        : PID_Controller(aPIparams, aT_Cntrl), mAntiWindupGain(aAntiWindupGain) {}
-
-    [[nodiscard]] TE::float32_t PI_Ctrl_Feedforward_ExternalAntiWindup::compute(const TE::float32_t aErr, const TE::float32_t aOutputLimited,
-                                                                                const TE::float32_t aFeedforward) {
-        const TE::float32_t output {runIteration(aErr, mWindupErrCompensateVal) + aFeedforward};
-        mWindupErrCompensateVal = mAntiWindupGain * (output - aOutputLimited); // compensation value for the next step
-        return output;
-    }
-
-    PI_Ctrl_Feedforward_InternalAntiWindup::PI_Ctrl_Feedforward_InternalAntiWindup(const PI_Params aPIparams, const TE::float32_t aT_Cntrl,
-                                                                                   const TE::float32_t aBottomLimit, const TE::float32_t aTopLimit,
-                                                                                   const TE::float32_t aAntiWindupGain) noexcept
-        : PID_Controller(aPIparams, aT_Cntrl), mBottomLimit(aBottomLimit), mTopLimit(aTopLimit), mAntiWindupGain(aAntiWindupGain) {
-        if (aBottomLimit > aTopLimit) {
-            throw "PID: The anti-windup bottom limit is larger than the top limit.";
-        }
-    }
-
-    [[nodiscard]] TE::float32_t PI_Ctrl_Feedforward_InternalAntiWindup::compute(const TE::float32_t aErr, const TE::float32_t aFeedforward) {
-        const TE::float32_t output {runIteration(aErr, mWindupErrCompensateVal) + aFeedforward};
         const TE::float32_t outputLimited {saturate(output, mTopLimit, mBottomLimit)}; // throws exception if mBottomLimit > mTopLimit
         mWindupErrCompensateVal = mAntiWindupGain * (output - outputLimited);          // compensation value for the next step
         return outputLimited;

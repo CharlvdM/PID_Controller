@@ -1,5 +1,4 @@
 cd ../
-set PATH="%PATH%;C:\msys64\mingw64\bin;C:\msys64\mingw64\lib"
-"C:\msys64\usr\bin\cmake.exe" -G "Unix Makefiles" -D CMAKE_C_COMPILER="C:/msys64/mingw64/bin/gcc.exe" -D CMAKE_CXX_COMPILER="C:/msys64/mingw64/bin/g++.exe" -D CMAKE_MAKE_PROGRAM="C:/msys64/usr/bin/make.exe" CmakeLists.txt
-"C:\msys64\usr\bin\make.exe" 
+cmake --no-warn-unused-cli -DCMAKE_MAKE_PROGRAM:STRING=C:\msys64\usr\bin\make.exe -DCMAKE_C_COMPILER:FILEPATH=C:\msys64\mingw64\bin\gcc.exe -DCMAKE_CXX_COMPILER:FILEPATH=C:\msys64\mingw64\bin\g++.exe -B build -G "Unix Makefiles"
+"C:\Program Files\CMake\bin\cmake.EXE" --build build --target all -j 14 --
 PAUSE
