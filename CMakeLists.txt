@@ -5,4 +5,3 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(Catch2)
 add_subdirectory(PID_Lib)
-add_subdirectory(MainCode)

@@ -4,20 +4,18 @@ project(Lib)
 set(CMAKE_CXX_STANDARD 20)
 
 # Create library
-add_library(Lib STATIC
-    src/libFunctions.cpp)
+add_library(PID_Lib STATIC
+    src/PID_Controller.cpp)
 
-target_include_directories(Lib PUBLIC inc)
+target_include_directories(PID_Lib PUBLIC inc)
 
 # Create an executable for the Catch2 test code
-add_executable(Lib_Tests 
+add_executable(PID_Test 
     test/test_main.cpp
-    test/test_libFunctions.cpp
-    # include all the source files that have to be tested
-    src/libFunctions.cpp)
+    test/test_PID_Controller.cpp)
 
-# Includes
-target_include_directories(Lib_Tests PUBLIC inc)
+# Add the source files to the test executable
+target_link_libraries(PID_Test PUBLIC PID_Lib)
 
-# Libraries
-target_link_libraries(Lib_Tests PRIVATE Catch2::Catch2)
+# Link Catch2 with the test executable
+target_link_libraries(PID_Test PRIVATE Catch2::Catch2)
